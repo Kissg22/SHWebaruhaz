@@ -1,0 +1,39 @@
+{% assign rate = 12700 %}
+{% assign subtotal_ft = cart.items_subtotal_price | divided_by: 100 | floor %}
+{% assign prev_rem = 0 %}
+{% if customer and customer.metafields.custom.jelenlegi_fennmarado %}
+  {% assign prev_rem = customer.metafields.custom.jelenlegi_fennmarado.value | plus: 0 | floor %}
+{% endif %}
+{% assign combined = prev_rem | plus: subtotal_ft %}
+{% assign shares_new = combined | divided_by: rate | floor %}
+{% assign new_rem = combined | modulo: rate %}
+
+{%- comment -%} Feltételes értékadás a "need" változónak {%- endcomment -%}
+{% if new_rem == 0 or combined == 0 %}
+  {% assign need = 0 %}
+{% else %}
+  {% assign need = rate | minus: new_rem %}
+{% endif %}
+
+{% assign percent = new_rem | times: 100 | divided_by: rate | floor %}
+
+<div id="share-progress-bar">
+  <div class="share-calculator">
+    {% if customer %}
+      <p>Ezzel a vásárlással <strong>{{ shares_new }} db</strong> részvényt adunk</p>
+    {% else %}
+      <p>Jelentkezz be a pontos kalkulációhoz!</p>
+      <p>Ezzel a vásárlással <strong>{{ shares_new }} db</strong> részvényt adunk</p>
+    {% endif %}
+  </div>
+  <div class="share-progress">
+    <div class="share-progress__bar" style="width: {{ percent }}%;" aria-valuenow="{{ percent }}"></div>
+    <div class="share-progress__text">
+      {% if subtotal_ft == 0 %}
+        Kosarad üres
+      {% else %}
+        <strong>{{ need }} Ft</strong> szükséges a következő részvényig
+      {% endif %}
+    </div>
+  </div>
+</div>
